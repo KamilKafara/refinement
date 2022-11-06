@@ -1,5 +1,6 @@
 package com.refinement.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import java.sql.Timestamp;
@@ -10,12 +11,12 @@ import java.util.Objects;
 @NoArgsConstructor
 @Setter
 @Getter
-@ToString
 @Builder
 public class ClientDTO {
     private Long id;
     private String name;
     private Timestamp updatedAt;
+    @JsonIgnore
     private List<DataDTO> dataDTOList;
 
     public void updateTimestamp() {

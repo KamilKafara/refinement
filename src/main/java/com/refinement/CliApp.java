@@ -4,8 +4,7 @@ import com.google.common.collect.Lists;
 import com.refinement.dto.CellData;
 import com.refinement.dto.ClientDTO;
 import com.refinement.dto.DataDTO;
-import com.refinement.persistence.ClientEntityPersistence;
-import com.refinement.persistence.DataEntityPersistence;
+import com.refinement.persistence.PersistenceService;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Lazy;
 
 import java.io.FileInputStream;
 import java.util.HashMap;
@@ -28,16 +26,13 @@ public class CliApp implements CommandLineRunner {
     private static final String PATH = "C:\\JavaProjects\\RefinementTask\\target\\classes\\sheet.xlsx";
     private static final int NUMBER_OF_SHEET = 0;
     private static final int STARTING_ROW = 1;
-    private final DataEntityPersistence dataEntityPersistence;
-    private final ClientEntityPersistence clientEntityPersistence;
+
+    private final PersistenceService persistenceService;
 
     @Autowired
-    @Lazy
-    public CliApp(DataEntityPersistence dataEntityPersistence, ClientEntityPersistence clientEntityPersistence) {
-        this.dataEntityPersistence = dataEntityPersistence;
-        this.clientEntityPersistence = clientEntityPersistence;
+    public CliApp(PersistenceService persistenceService) {
+        this.persistenceService = persistenceService;
     }
-
 
     public static void main(String[] args) {
         log.info("STARTING THE APPLICATION");
@@ -75,11 +70,8 @@ public class CliApp implements CommandLineRunner {
                         .name(String.valueOf(cellClientName))
                         .dataDTOList(Lists.newArrayList(dataDTO))
                         .build();
-                clientDTO.setDataDTOList(Lists.newArrayList(dataDTO));
-
-//                ClientDTO savedEntity = dataEntityPersistence.save(clientDTO);
-                DataDTO savedDataEntity = dataEntityPersistence.save(dataDTO);
-//                data.put(i, savedEntity);
+                dataDTO.setClientDTO(clientDTO);
+                persistenceService.save(dataDTO);
                 i++;
             }
         }

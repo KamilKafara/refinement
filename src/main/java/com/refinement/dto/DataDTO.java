@@ -1,7 +1,9 @@
 package com.refinement.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.sql.Timestamp;
 import java.util.Objects;
@@ -10,10 +12,8 @@ import java.util.Objects;
 @Setter
 @Getter
 @Builder
-@ToString
 public class DataDTO {
     private Long id;
-    @JsonIgnore
     private ClientDTO clientDTO;
     private String code1;
     private String code2;

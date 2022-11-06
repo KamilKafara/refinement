@@ -4,6 +4,7 @@ import com.refinement.dto.ClientDTO;
 import com.refinement.mapper.ClientEntityMapper;
 import com.refinement.repository.ClientEntity;
 import com.refinement.repository.ClientEntityRepository;
+import com.refinement.repository.DataEntityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,22 +16,22 @@ import java.util.stream.Collectors;
 @Service
 class ClientEntityPersistenceImpl implements ClientEntityPersistence {
     private final ClientEntityRepository clientEntityRepository;
-//    private final DataEntityRepository dataEntityRepository;
-    private final DataEntityPersistence dataEntityPersistence;
+    private final DataEntityRepository dataEntityRepository;
+    private final ClientEntityMapper clientEntityMapper;
 
     @Autowired
     public ClientEntityPersistenceImpl(ClientEntityRepository clientEntityRepository,
-//                                       DataEntityRepository dataEntityRepository,
-                                       DataEntityPersistence dataEntityPersistence) {
+                                       DataEntityRepository dataEntityRepository,
+                                       ClientEntityMapper clientEntityMapper) {
         this.clientEntityRepository = clientEntityRepository;
-//        this.dataEntityRepository = dataEntityRepository;
-        this.dataEntityPersistence = dataEntityPersistence;
+        this.dataEntityRepository = dataEntityRepository;
+        this.clientEntityMapper = clientEntityMapper;
     }
 
     @Override
     public List<ClientDTO> getAllClient() {
         return clientEntityRepository.findAll().stream()
-                .map(ClientEntityMapper::toDTO)
+                .map(clientEntityMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -40,7 +41,7 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
         if (entity.isEmpty()) {
             System.out.println("Not found clientEntity by this id " + id);
         }
-        return ClientEntityMapper.toDTO(entity.get());
+        return clientEntityMapper.toDTO(entity.get());
     }
 
     @Override
@@ -50,7 +51,7 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
             System.out.println("Not found clientEntity by this name " + name);
             return null;
         }
-        return ClientEntityMapper.toDTO(clientFromDB.stream().findFirst().get());
+        return clientEntityMapper.toDTO(clientFromDB.stream().findFirst().get());
     }
 
     @Override
@@ -64,17 +65,8 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
         if (clientFromDB.isPresent()) {
             return update(clientDTO, clientDTO.getId());
         }
-        ClientEntity clientEntity = ClientEntityMapper.fromDTO(clientDTO);
-        ClientEntity entityFromDB = clientEntityRepository.save(clientEntity);
-        System.out.println(clientEntity + "\n");
-
-        entityFromDB.getDataEntities().forEach(dataEntity -> {
-            dataEntity.setClientEntity(entityFromDB);
-//            DataDTO save = dataEntityPersistence.save(DataEntityMapper.toDTO(dataEntity));
-//            entityFromDB.setDataEntities(Lists.newArrayList(DataEntityMapper.fromDTO(save)));
-        });
-
-        return ClientEntityMapper.toDTO(entityFromDB);
+        ClientEntity clientEntity = clientEntityRepository.save(clientEntityMapper.fromDTO(clientDTO));
+        return clientEntityMapper.toDTO(clientEntity);
     }
 
     @Override
@@ -83,7 +75,7 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
             System.out.println("ClientDTO have different id.");
         }
         clientDTO.updateTimestamp();
-        ClientEntity clientEntity = clientEntityRepository.save(ClientEntityMapper.fromDTO(clientDTO));
-        return ClientEntityMapper.toDTO(clientEntity);
+        ClientEntity clientEntity = clientEntityRepository.save(clientEntityMapper.fromDTO(clientDTO));
+        return clientEntityMapper.toDTO(clientEntity);
     }
 }

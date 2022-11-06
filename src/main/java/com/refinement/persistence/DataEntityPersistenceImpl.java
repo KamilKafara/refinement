@@ -1,11 +1,12 @@
 package com.refinement.persistence;
 
 import com.google.common.base.Preconditions;
-import com.refinement.dto.ClientDTO;
 import com.refinement.dto.DataDTO;
 import com.refinement.mapper.DataEntityMapper;
+import com.refinement.repository.ClientEntity;
 import com.refinement.repository.DataEntity;
 import com.refinement.repository.DataEntityRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,16 +19,18 @@ import java.util.stream.Collectors;
 public class DataEntityPersistenceImpl implements DataEntityPersistence {
     private final DataEntityRepository dataEntityRepository;
     private final ClientEntityPersistence clientEntityPersistence;
+    private final DataEntityMapper dataEntityMapper;
 
     @Autowired
-    public DataEntityPersistenceImpl(DataEntityRepository dataEntityRepository, ClientEntityPersistence clientEntityPersistence) {
+    public DataEntityPersistenceImpl(DataEntityRepository dataEntityRepository, ClientEntityPersistence clientEntityPersistence, DataEntityMapper dataEntityMapper) {
         this.dataEntityRepository = dataEntityRepository;
         this.clientEntityPersistence = clientEntityPersistence;
+        this.dataEntityMapper = dataEntityMapper;
     }
 
     public List<DataDTO> getAllData() {
         return dataEntityRepository.findAll().stream()
-                .map(DataEntityMapper::toDTO)
+                .map(dataEntityMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -36,7 +39,7 @@ public class DataEntityPersistenceImpl implements DataEntityPersistence {
         if (entity.isEmpty()) {
             System.out.println("Not found dataEntity by this id " + id);
         }
-        return DataEntityMapper.toDTO(entity.get());
+        return dataEntityMapper.toDTO(entity.get());
     }
 
     public DataDTO save(DataDTO dataDTO) {
@@ -45,15 +48,11 @@ public class DataEntityPersistenceImpl implements DataEntityPersistence {
         if (!dataEntityFromDB.isEmpty()) {
             return update(dataDTO, dataDTO.getId());
         }
-        DataEntity dataEntity = DataEntityMapper.fromDTO(dataDTO);
-        DataEntity newDataEntityFromDB = dataEntityRepository.save(dataEntity);
-        DataDTO dataDTO1 = DataEntityMapper.toDTO(newDataEntityFromDB);
+        DataEntity fromDTO = dataEntityMapper.fromDTO(dataDTO);
+        fromDTO.setClientEntity(new ModelMapper().map(dataDTO.getClientDTO(), ClientEntity.class));
+        DataEntity dataEntity = dataEntityRepository.save(fromDTO);
+        return dataEntityMapper.toDTO(dataEntity);
 
-        ClientDTO save = clientEntityPersistence.save(dataDTO1.getClientDTO());
-//    newDataEntityFromDB.setClientEntity(save);
-
-        System.out.println(newDataEntityFromDB);
-        return dataDTO1;
     }
 
     public DataDTO update(DataDTO dataDTO, Long id) {
@@ -62,8 +61,8 @@ public class DataEntityPersistenceImpl implements DataEntityPersistence {
             System.out.println("DataDTO have different id.");
         }
         dataDTO.updateTimestamp();
-        DataEntity entityFromDB = dataEntityRepository.save(DataEntityMapper.fromDTO(dataDTO));
-        return DataEntityMapper.toDTO(entityFromDB);
+        DataEntity entityFromDB = dataEntityRepository.save(dataEntityMapper.fromDTO(dataDTO));
+        return dataEntityMapper.toDTO(entityFromDB);
     }
 
 
