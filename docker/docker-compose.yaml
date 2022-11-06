@@ -1,0 +1,29 @@
+version: '3.1'
+
+services:
+  postgres_db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_HOST_AUTH_MODE=trust
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=refinement_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database:/var/lib/postgresql
+  postgres_db_client:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@domain.com
+      - PGADMIN_DEFAULT_PASSWORD=password
+    restart: always
+    ports:
+      - "5050:80"
+    volumes:
+      - postgres_db_client:/var/lib/pgadmin
+
+volumes:
+  postgres_db:
+  postgres_db_client:
