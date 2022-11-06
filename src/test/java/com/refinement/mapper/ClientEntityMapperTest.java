@@ -15,15 +15,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(MockitoJUnitRunner.class)
 public class ClientEntityMapperTest extends TestCase {
     @InjectMocks
-    ClientEntityMapper clientEntityMapper;
+    private ClientEntityMapper clientEntityMapper;
 
     @Test
     public void testFromDTO() {
         //given
-        ClientEntity clientEntity = new ClientEntity();
-        clientEntity.setId(1L);
-        clientEntity.setName("SomeName");
-        clientEntity.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+        ClientEntity clientEntity = createClientEntity();
         //when
         ClientDTO expectedClientDTO = clientEntityMapper.toDTO(clientEntity);
         //then
@@ -35,15 +32,28 @@ public class ClientEntityMapperTest extends TestCase {
     @Test
     public void testToDTO() {
         //given
-        ClientDTO clientDTO = new ClientDTO();
-        clientDTO.setId(1L);
-        clientDTO.setName("SomeName");
-        clientDTO.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+        ClientDTO clientDTO = createClientDTO();
         //when
         ClientEntity expectedClientEntity = clientEntityMapper.fromDTO(clientDTO);
         //then
         assertThat(expectedClientEntity.getId()).isEqualTo(clientDTO.getId());
         assertThat(expectedClientEntity.getUpdatedAt()).isEqualTo(clientDTO.getUpdatedAt());
         assertThat(expectedClientEntity.getName()).isEqualTo(clientDTO.getName());
+    }
+
+    private static ClientEntity createClientEntity() {
+        ClientEntity clientEntity = new ClientEntity();
+        clientEntity.setId(1L);
+        clientEntity.setName("SomeName");
+        clientEntity.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+        return clientEntity;
+    }
+
+    private static ClientDTO createClientDTO() {
+        ClientDTO clientDTO = new ClientDTO();
+        clientDTO.setId(1L);
+        clientDTO.setName("SomeName");
+        clientDTO.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+        return clientDTO;
     }
 }

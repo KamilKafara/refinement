@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class DataEntityPersistenceImpl implements DataEntityPersistence {
+class DataEntityPersistenceImpl implements DataEntityPersistence {
     private final DataEntityRepository dataEntityRepository;
     private final ClientEntityPersistence clientEntityPersistence;
     private final DataEntityMapper dataEntityMapper;
