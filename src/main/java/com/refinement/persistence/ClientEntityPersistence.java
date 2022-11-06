@@ -7,7 +7,7 @@ import java.util.List;
 public interface ClientEntityPersistence {
     List<ClientDTO> getAllClient();
 
-    ClientDTO getById(Integer id);
+    ClientDTO getById(Long id);
 
     ClientDTO saveOrUpdate(ClientDTO clientDTO, Long id);
 

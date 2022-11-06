@@ -36,8 +36,8 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
     }
 
     @Override
-    public ClientDTO getById(Integer id) {
-        Optional<ClientEntity> entity = clientEntityRepository.findById(Long.valueOf(id));
+    public ClientDTO getById(Long id) {
+        Optional<ClientEntity> entity = clientEntityRepository.findById(id);
         if (entity.isEmpty()) {
             System.out.println("Not found clientEntity by this id " + id);
         }
@@ -63,7 +63,7 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
     public ClientDTO save(ClientDTO clientDTO) {
         Optional<ClientDTO> clientFromDB = Optional.ofNullable(getByName(clientDTO.getName()));
         if (clientFromDB.isPresent()) {
-            return update(clientDTO, clientDTO.getId());
+            return update(clientDTO, clientFromDB.get().getId());
         }
         ClientEntity clientEntity = clientEntityRepository.save(clientEntityMapper.fromDTO(clientDTO));
         return clientEntityMapper.toDTO(clientEntity);
@@ -74,6 +74,8 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
         if (!Objects.equals(clientDTO.getId(), id)) {
             System.out.println("ClientDTO have different id.");
         }
+        ClientDTO clientFromDB = getById(id);
+        clientFromDB.setId(clientFromDB.getId());
         clientDTO.updateTimestamp();
         ClientEntity clientEntity = clientEntityRepository.save(clientEntityMapper.fromDTO(clientDTO));
         return clientEntityMapper.toDTO(clientEntity);

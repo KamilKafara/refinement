@@ -7,7 +7,7 @@ import java.util.List;
 public interface DataEntityPersistence {
     List<DataDTO> getAllData();
 
-    DataDTO getById(Integer id);
+    DataDTO getById(Long id);
 
     DataDTO save(DataDTO dataDTO);
 

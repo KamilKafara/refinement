@@ -1,6 +1,5 @@
 package com.refinement.persistence;
 
-import com.refinement.dto.ClientDTO;
 import com.refinement.dto.DataDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,9 +17,6 @@ public class PersistenceService {
     }
 
     public void save(DataDTO dataDTO) {
-        DataDTO dataDTO1 = dataEntityPersistence.save(dataDTO);
-        ClientDTO savedClientDTO = clientEntityPersistence.save(dataDTO.getClientDTO());
-
-        System.out.println(dataDTO);
+        dataEntityPersistence.save(dataDTO);
     }
 }
