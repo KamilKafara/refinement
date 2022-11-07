@@ -4,7 +4,6 @@ import com.refinement.dto.ClientDTO;
 import com.refinement.mapper.ClientEntityMapper;
 import com.refinement.repository.ClientEntity;
 import com.refinement.repository.ClientEntityRepository;
-import com.refinement.repository.DataEntityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,15 +15,12 @@ import java.util.stream.Collectors;
 @Service
 class ClientEntityPersistenceImpl implements ClientEntityPersistence {
     private final ClientEntityRepository clientEntityRepository;
-    private final DataEntityRepository dataEntityRepository;
     private final ClientEntityMapper clientEntityMapper;
 
     @Autowired
     public ClientEntityPersistenceImpl(ClientEntityRepository clientEntityRepository,
-                                       DataEntityRepository dataEntityRepository,
                                        ClientEntityMapper clientEntityMapper) {
         this.clientEntityRepository = clientEntityRepository;
-        this.dataEntityRepository = dataEntityRepository;
         this.clientEntityMapper = clientEntityMapper;
     }
 
@@ -74,9 +70,8 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
         if (!Objects.equals(clientDTO.getId(), id)) {
             System.out.println("ClientDTO have different id.");
         }
-        ClientDTO clientFromDB = getById(id);
-        clientFromDB.setId(clientFromDB.getId());
         clientDTO.updateTimestamp();
+        clientDTO.setId(id);
         ClientEntity clientEntity = clientEntityRepository.save(clientEntityMapper.fromDTO(clientDTO));
         return clientEntityMapper.toDTO(clientEntity);
     }

@@ -16,8 +16,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.FileInputStream;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 @SpringBootApplication
@@ -51,32 +49,31 @@ public class CliApp implements CommandLineRunner {
     private void readSheet(Workbook workbook) {
         Sheet sheet = workbook.getSheetAt(NUMBER_OF_SHEET);
 
-        Map<Integer, ClientDTO> data = new HashMap<>();
-        int i = 0;
         for (Row row : sheet) {
             if (row.getRowNum() >= STARTING_ROW) {
-                Cell cellClientName = row.getCell(CellData.CLIENT_NAME.ordinal());
-                Cell cellCode1 = row.getCell(CellData.CODE_1.ordinal());
-                Cell cellCode2 = row.getCell(CellData.CODE_2.ordinal());
-                Cell cellCellData = row.getCell(CellData.CELL_DATA.ordinal());
-
-                DataDTO dataDTO = DataDTO.builder()
-                        .someData(String.valueOf(cellCellData))
-                        .code1(String.valueOf(cellCode1))
-                        .code2(String.valueOf(cellCode2))
-                        .build();
-
-                ClientDTO clientDTO = ClientDTO.builder()
-                        .name(String.valueOf(cellClientName))
-                        .dataDTOList(Lists.newArrayList(dataDTO))
-                        .build();
-                dataDTO.setClientDTO(clientDTO);
+                DataDTO dataDTO = prepareDataToSave(row);
                 persistenceService.save(dataDTO);
-                i++;
             }
         }
-        System.out.println(data.size());
     }
 
+    private static DataDTO prepareDataToSave(Row row) {
+        Cell cellClientName = row.getCell(CellData.CLIENT_NAME.ordinal());
+        Cell cellCode1 = row.getCell(CellData.CODE_1.ordinal());
+        Cell cellCode2 = row.getCell(CellData.CODE_2.ordinal());
+        Cell cellCellData = row.getCell(CellData.CELL_DATA.ordinal());
 
+        DataDTO dataDTO = DataDTO.builder()
+                .someData(String.valueOf(cellCellData))
+                .code1(String.valueOf(cellCode1))
+                .code2(String.valueOf(cellCode2))
+                .build();
+
+        ClientDTO clientDTO = ClientDTO.builder()
+                .name(String.valueOf(cellClientName))
+                .dataDTOList(Lists.newArrayList(dataDTO))
+                .build();
+        dataDTO.setClientDTO(clientDTO);
+        return dataDTO;
+    }
 }

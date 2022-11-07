@@ -17,6 +17,13 @@ public class PersistenceService {
     }
 
     public void save(DataDTO dataDTO) {
-        dataEntityPersistence.save(dataDTO);
+        DataDTO newDataDTO = dataEntityPersistence.save(dataDTO);
+//        newDataDTO.setClientDTO(dataDTO.getClientDTO());
+//        DataDTO persistenceById = dataEntityPersistence.getById(newDataDTO.getId());
+//        ClientDTO newClientDTO = clientEntityPersistence.save(dataDTO.getClientDTO());
+//        System.out.println(newClientDTO);
+//        newClientDTO.getDataDTOList().forEach(dataDTO1 -> {
+//            dataEntityPersistence.save(dataDTO1);
+//        });
     }
 }
