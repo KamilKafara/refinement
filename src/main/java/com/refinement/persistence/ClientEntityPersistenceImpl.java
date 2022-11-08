@@ -4,15 +4,18 @@ import com.refinement.dto.ClientDTO;
 import com.refinement.mapper.ClientEntityMapper;
 import com.refinement.repository.ClientEntity;
 import com.refinement.repository.ClientEntityRepository;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.xml.bind.ValidationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 class ClientEntityPersistenceImpl implements ClientEntityPersistence {
+
     private final ClientEntityRepository clientEntityRepository;
     private final ClientEntityMapper clientEntityMapper;
 
@@ -37,18 +40,21 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
     }
 
     @Override
-    public ClientDTO getByName(String name) {
+    public Optional<ClientDTO> getByName(String name) {
         List<ClientEntity> clientFromDB = clientEntityRepository.findClientEntityByName(name);
         if (clientFromDB.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
-        return clientEntityMapper.toDTO(clientFromDB.stream().findFirst().get());
+        Optional<ClientEntity> clientEntity = clientFromDB.stream().findFirst();
+        if (clientEntity.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(clientEntityMapper.toDTO(clientEntity.get()));
     }
 
-
     @Override
-    public ClientDTO save(ClientDTO clientDTO) {
-        Optional<ClientDTO> clientFromDB = Optional.ofNullable(getByName(clientDTO.getName()));
+    public ClientDTO saveOrUpdate(ClientDTO clientDTO) {
+        Optional<ClientDTO> clientFromDB = getByName(clientDTO.getName());
         if (clientFromDB.isPresent()) {
             return update(clientDTO, clientFromDB.get().getId());
         }
@@ -56,8 +62,12 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
         return clientEntityMapper.toDTO(clientEntity);
     }
 
+    @SneakyThrows
     @Override
     public ClientDTO update(ClientDTO clientDTO, Long id) {
+        if (clientDTO.getId() != null) {
+            throw new ValidationException("Ids are not equals.");
+        }
         clientDTO.updateTimestamp();
         clientDTO.setId(id);
         ClientEntity clientEntity = clientEntityRepository.save(clientEntityMapper.fromDTO(clientDTO));

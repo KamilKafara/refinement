@@ -51,7 +51,7 @@ public class CliApp implements CommandLineRunner {
 
     private void persistData(List<DataDTO> dataToSave) {
         log.info("Persistence started...");
-        dataToSave.forEach(dataEntityPersistence::save);
+        dataToSave.forEach(dataEntityPersistence::saveOrUpdate);
         log.info("Persistence finished...");
     }
 }

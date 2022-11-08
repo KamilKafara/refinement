@@ -3,11 +3,11 @@ package com.refinement.persistence;
 import com.google.common.base.Preconditions;
 import com.refinement.dto.ClientDTO;
 import com.refinement.dto.DataDTO;
+import com.refinement.mapper.ClientEntityMapper;
 import com.refinement.mapper.DataEntityMapper;
-import com.refinement.repository.ClientEntity;
 import com.refinement.repository.DataEntity;
 import com.refinement.repository.DataEntityRepository;
-import org.modelmapper.ModelMapper;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,14 +20,16 @@ public class DataEntityPersistenceImpl implements DataEntityPersistence {
     private final DataEntityRepository dataEntityRepository;
     private final ClientEntityPersistence clientEntityPersistence;
     private final DataEntityMapper dataEntityMapper;
+    private final ClientEntityMapper clientEntityMapper;
 
     @Autowired
     public DataEntityPersistenceImpl(DataEntityRepository dataEntityRepository,
                                      ClientEntityPersistence clientEntityPersistence,
-                                     DataEntityMapper dataEntityMapper) {
+                                     DataEntityMapper dataEntityMapper, ClientEntityMapper clientEntityMapper) {
         this.dataEntityRepository = dataEntityRepository;
         this.clientEntityPersistence = clientEntityPersistence;
         this.dataEntityMapper = dataEntityMapper;
+        this.clientEntityMapper = clientEntityMapper;
     }
 
     public List<DataDTO> getAllData() {
@@ -36,15 +38,14 @@ public class DataEntityPersistenceImpl implements DataEntityPersistence {
                 .collect(Collectors.toList());
     }
 
+    @SneakyThrows
     public DataDTO getById(Long id) {
         Optional<DataEntity> entity = dataEntityRepository.findById(id);
-        if (entity.isEmpty()) {
-            System.out.println("Not found dataEntity by this id " + id);
-        }
+        Preconditions.checkNotNull(entity, " Not found dataEntity by this id " + id);
         return dataEntityMapper.toDTO(entity.get());
     }
 
-    public DataDTO save(DataDTO dataDTO) {
+    public DataDTO saveOrUpdate(DataDTO dataDTO) {
         Preconditions.checkNotNull(dataDTO, "DataDTO cannot be null.");
         List<DataEntity> dataEntityFromDB = dataEntityRepository.findDataEntitiesByCode1AndCode2(dataDTO.getCode1(), dataDTO.getCode2());
         if (!dataEntityFromDB.isEmpty()) {
@@ -58,18 +59,18 @@ public class DataEntityPersistenceImpl implements DataEntityPersistence {
         return setupDTOAfterSave(entityFromDB);
     }
 
-    private static DataDTO setupDTOAfterSave(DataEntity entityFromDB) {
-        DataDTO dto = new ModelMapper().map(entityFromDB, DataDTO.class);
+    private DataDTO setupDTOAfterSave(DataEntity entityFromDB) {
+        DataDTO dto = dataEntityMapper.toDTO(entityFromDB);
         if (entityFromDB.getClientEntity() != null) {
-            dto.setClientDTO(new ModelMapper().map(entityFromDB.getClientEntity(), ClientDTO.class));
+            dto.setClientDTO(clientEntityMapper.toDTO(entityFromDB.getClientEntity()));
         }
         return dto;
     }
 
-    private static DataEntity prepareDataEntityToUpdate(DataDTO dataDTO, List<DataEntity> dataEntityFromDB) {
+    private DataEntity prepareDataEntityToUpdate(DataDTO dataDTO, List<DataEntity> dataEntityFromDB) {
         DataEntity dataEntity = dataEntityFromDB.stream().findFirst().get();
         if (dataEntity.getClientEntity() != null) {
-            dataDTO.setClientDTO(new ModelMapper().map(dataEntity.getClientEntity(), ClientDTO.class));
+            dataDTO.setClientDTO(clientEntityMapper.toDTO(dataEntity.getClientEntity()));
         }
         return dataEntity;
     }
@@ -84,23 +85,24 @@ public class DataEntityPersistenceImpl implements DataEntityPersistence {
         return dataEntityMapper.toDTO(entityFromDB);
     }
 
-    private static void prepareDataToUpdate(DataDTO dataDTO, Long id, DataEntity fromDTO) {
+    private void prepareDataToUpdate(DataDTO dataDTO, Long id, DataEntity fromDTO) {
         ClientDTO clientDTO = dataDTO.getClientDTO();
         if (clientDTO != null) {
             clientDTO.updateTimestamp();
             fromDTO.setId(id);
-            fromDTO.setClientEntity(new ModelMapper().map(clientDTO, ClientEntity.class));
+            fromDTO.setClientEntity(clientEntityMapper.fromDTO(clientDTO));
         }
     }
 
     private void findExistingClient(DataDTO dataDTO, DataEntity fromDTO) {
-        if ((dataDTO != null) && (dataDTO.getClientDTO() != null)) {
-            Optional<ClientDTO> findClient = Optional.ofNullable(clientEntityPersistence.getByName(dataDTO.getClientDTO().getName()));
-            if (findClient.isPresent()) {
-                fromDTO.setClientEntity(new ModelMapper().map(findClient, ClientEntity.class));
-            } else {
-                fromDTO.setClientEntity(new ModelMapper().map(dataDTO.getClientDTO(), ClientEntity.class));
-            }
+        if ((dataDTO == null) && (dataDTO.getClientDTO() == null)) {
+            return;
+        }
+        Optional<ClientDTO> findClient = clientEntityPersistence.getByName(dataDTO.getClientDTO().getName());
+        if (findClient.isPresent()) {
+            fromDTO.setClientEntity(clientEntityMapper.fromDTO(findClient.get()));
+        } else {
+            fromDTO.setClientEntity(clientEntityMapper.fromDTO(dataDTO.getClientDTO()));
         }
     }
 }

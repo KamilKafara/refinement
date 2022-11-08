@@ -9,7 +9,7 @@ public interface DataEntityPersistence {
 
     DataDTO getById(Long id);
 
-    DataDTO save(DataDTO dataDTO);
+    DataDTO saveOrUpdate(DataDTO dataDTO);
 
     DataDTO update(DataDTO dataDTO, Long id);
 }

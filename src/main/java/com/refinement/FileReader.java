@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.refinement.dto.CellData;
 import com.refinement.dto.ClientDTO;
 import com.refinement.dto.DataDTO;
-import com.refinement.utils.FileType;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -23,6 +22,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static com.refinement.utils.FileType.CSV;
+import static com.refinement.utils.FileType.XLSX;
 import static com.refinement.utils.StringValidator.*;
 
 public class FileReader {
@@ -46,7 +46,7 @@ public class FileReader {
         log.info("Parsing started...");
         FileInputStream file = new FileInputStream(path);
         List<DataDTO> dataToSave = new ArrayList<>();
-        if (path.contains(FileType.XLSX.getType())) {
+        if (path.contains(XLSX.getType())) {
             Workbook workbook = new XSSFWorkbook(file);
             dataToSave.addAll(readSheet(workbook));
         } else if (path.contains(CSV.getType())) {
@@ -58,13 +58,13 @@ public class FileReader {
         log.info("Parsing finished...");
     }
 
-    private List<DataDTO> readAndSaveDataFromCSV(String fileName) {
+    private List<DataDTO> readAndSaveDataFromCSV(String fileName) throws IOException {
         List<DataDTO> dataDTOS = new ArrayList<>();
 
         try (Stream<String> lines = Files.lines(Path.of(fileName)).skip(STARTING_ROW)) {
             lines.forEach(line -> readRowFromCSV(dataDTOS, line));
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            throw new IOException("An occurred exception while reading CSV file." + ioe.getMessage());
         }
         return dataDTOS;
     }

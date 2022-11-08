@@ -3,15 +3,16 @@ package com.refinement.persistence;
 import com.refinement.dto.ClientDTO;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ClientEntityPersistence {
     List<ClientDTO> getAllClient();
 
     ClientDTO getById(Long id);
 
-    ClientDTO save(ClientDTO clientDTO);
+    ClientDTO saveOrUpdate(ClientDTO clientDTO);
 
     ClientDTO update(ClientDTO clientDTO, Long id);
 
-    ClientDTO getByName(String name);
+    Optional<ClientDTO> getByName(String name);
 }
