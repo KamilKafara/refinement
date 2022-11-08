@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,9 +33,6 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
     @Override
     public ClientDTO getById(Long id) {
         Optional<ClientEntity> entity = clientEntityRepository.findById(id);
-        if (entity.isEmpty()) {
-            System.out.println("Not found clientEntity by this id " + id);
-        }
         return clientEntityMapper.toDTO(entity.get());
     }
 
@@ -44,16 +40,11 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
     public ClientDTO getByName(String name) {
         List<ClientEntity> clientFromDB = clientEntityRepository.findClientEntityByName(name);
         if (clientFromDB.isEmpty()) {
-            System.out.println("Not found clientEntity by this name " + name);
             return null;
         }
         return clientEntityMapper.toDTO(clientFromDB.stream().findFirst().get());
     }
 
-    @Override
-    public ClientDTO saveOrUpdate(ClientDTO clientDTO, Long id) {
-        return null;
-    }
 
     @Override
     public ClientDTO save(ClientDTO clientDTO) {
@@ -67,9 +58,6 @@ class ClientEntityPersistenceImpl implements ClientEntityPersistence {
 
     @Override
     public ClientDTO update(ClientDTO clientDTO, Long id) {
-        if (!Objects.equals(clientDTO.getId(), id)) {
-            System.out.println("ClientDTO have different id.");
-        }
         clientDTO.updateTimestamp();
         clientDTO.setId(id);
         ClientEntity clientEntity = clientEntityRepository.save(clientEntityMapper.fromDTO(clientDTO));

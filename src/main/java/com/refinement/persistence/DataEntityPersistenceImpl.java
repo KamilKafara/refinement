@@ -60,18 +60,23 @@ public class DataEntityPersistenceImpl implements DataEntityPersistence {
 
     private static DataDTO setupDTOAfterSave(DataEntity entityFromDB) {
         DataDTO dto = new ModelMapper().map(entityFromDB, DataDTO.class);
-        dto.setClientDTO(new ModelMapper().map(entityFromDB.getClientEntity(), ClientDTO.class));
+        if (entityFromDB.getClientEntity() != null) {
+            dto.setClientDTO(new ModelMapper().map(entityFromDB.getClientEntity(), ClientDTO.class));
+        }
         return dto;
     }
 
     private static DataEntity prepareDataEntityToUpdate(DataDTO dataDTO, List<DataEntity> dataEntityFromDB) {
         DataEntity dataEntity = dataEntityFromDB.stream().findFirst().get();
-        dataDTO.setClientDTO(new ModelMapper().map(dataEntity.getClientEntity(), ClientDTO.class));
+        if (dataEntity.getClientEntity() != null) {
+            dataDTO.setClientDTO(new ModelMapper().map(dataEntity.getClientEntity(), ClientDTO.class));
+        }
         return dataEntity;
     }
 
     public DataDTO update(DataDTO dataDTO, Long id) {
         Preconditions.checkNotNull(dataDTO, "DataDTO cannot be null.");
+        dataDTO.updateTimestamp();
         DataEntity fromDTO = dataEntityMapper.fromDTO(dataDTO);
         findExistingClient(dataDTO, fromDTO);
         prepareDataToUpdate(dataDTO, id, fromDTO);
@@ -80,19 +85,22 @@ public class DataEntityPersistenceImpl implements DataEntityPersistence {
     }
 
     private static void prepareDataToUpdate(DataDTO dataDTO, Long id, DataEntity fromDTO) {
-        dataDTO.updateTimestamp();
-        fromDTO.setId(id);
-        fromDTO.setClientEntity(new ModelMapper().map(dataDTO.getClientDTO(), ClientEntity.class));
-    }
-
-    private void findExistingClient(DataDTO dataDTO, DataEntity fromDTO) {
-        Optional<ClientDTO> findClient = Optional.ofNullable(clientEntityPersistence.getByName(dataDTO.getClientDTO().getName()));
-        if (findClient.isPresent()) {
-            fromDTO.setClientEntity(new ModelMapper().map(findClient, ClientEntity.class));
-        } else {
-            fromDTO.setClientEntity(new ModelMapper().map(dataDTO.getClientDTO(), ClientEntity.class));
+        ClientDTO clientDTO = dataDTO.getClientDTO();
+        if (clientDTO != null) {
+            clientDTO.updateTimestamp();
+            fromDTO.setId(id);
+            fromDTO.setClientEntity(new ModelMapper().map(clientDTO, ClientEntity.class));
         }
     }
 
-
+    private void findExistingClient(DataDTO dataDTO, DataEntity fromDTO) {
+        if ((dataDTO != null) && (dataDTO.getClientDTO() != null)) {
+            Optional<ClientDTO> findClient = Optional.ofNullable(clientEntityPersistence.getByName(dataDTO.getClientDTO().getName()));
+            if (findClient.isPresent()) {
+                fromDTO.setClientEntity(new ModelMapper().map(findClient, ClientEntity.class));
+            } else {
+                fromDTO.setClientEntity(new ModelMapper().map(dataDTO.getClientDTO(), ClientEntity.class));
+            }
+        }
+    }
 }

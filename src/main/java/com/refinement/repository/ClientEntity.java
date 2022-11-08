@@ -14,7 +14,6 @@ public class ClientEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Column
     private String name;
     private Timestamp updatedAt;
     @OneToMany(

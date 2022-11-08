@@ -2,13 +2,11 @@ package com.refinement.dto;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
 import java.util.Objects;
 
-@NoArgsConstructor
 @Setter
 @Getter
 @Builder
@@ -20,6 +18,11 @@ public class DataDTO {
     private String someData;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+
+    public DataDTO() {
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        this.createdAt = Objects.requireNonNullElse(createdAt, timestamp);
+    }
 
     public DataDTO(Long id, ClientDTO clientDTO, String code1, String code2, String someData, Timestamp updatedAt, Timestamp createdAt) {
         this.id = id;
