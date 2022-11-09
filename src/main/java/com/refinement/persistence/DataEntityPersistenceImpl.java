@@ -95,14 +95,13 @@ public class DataEntityPersistenceImpl implements DataEntityPersistence {
     }
 
     private void findExistingClient(DataDTO dataDTO, DataEntity fromDTO) {
-        if ((dataDTO == null) && (dataDTO.getClientDTO() == null)) {
-            return;
-        }
-        Optional<ClientDTO> findClient = clientEntityPersistence.getByName(dataDTO.getClientDTO().getName());
-        if (findClient.isPresent()) {
-            fromDTO.setClientEntity(clientEntityMapper.fromDTO(findClient.get()));
-        } else {
-            fromDTO.setClientEntity(clientEntityMapper.fromDTO(dataDTO.getClientDTO()));
+        if ((dataDTO != null) && (dataDTO.getClientDTO() != null)) {
+            Optional<ClientDTO> findClient = clientEntityPersistence.getByName(dataDTO.getClientDTO().getName());
+            if (findClient.isPresent()) {
+                fromDTO.setClientEntity(clientEntityMapper.fromDTO(findClient.get()));
+            } else {
+                fromDTO.setClientEntity(clientEntityMapper.fromDTO(dataDTO.getClientDTO()));
+            }
         }
     }
 }
